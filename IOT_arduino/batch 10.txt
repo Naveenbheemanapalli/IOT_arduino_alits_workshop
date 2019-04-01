@@ -1,0 +1,57 @@
+#include <LiquidCrystal.h>
+const int rs = A0, en = A1, d4 = A2, d5 = A3, d6 = A4, d7 = A5;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+#define ldr1 8 // Echo Pin
+#define ldr2 9 // Trigger Pin
+#define m1 10 // Echo Pin
+#define m2 11 // Trigger Pin
+
+int l1,l2;
+void setup() {
+ lcd.begin(16, 2);
+delay(1000);
+ Serial.begin (9600);
+ pinMode(ldr1, INPUT);
+ pinMode(ldr2, INPUT);
+
+ pinMode(m1, OUTPUT);
+ pinMode(m2, OUTPUT);
+ 
+ delay(1000);
+ 
+lcd.clear();lcd.setCursor(0, 0); lcd.print("SOLAR TRACKING");
+lcd.setCursor(0, 1); lcd.print("   SYSTEM");delay(1000);lcd.clear();
+
+
+}
+
+void loop()
+{
+  while(1)
+  {
+l1=digitalRead(ldr1);delay(10);
+l2=digitalRead(ldr2);delay(10);
+if((l1==LOW)&&(l2==LOW))
+{
+lcd.clear();lcd.setCursor(0, 0); lcd.print("LIGHT-STOP");  
+digitalWrite(m1,LOW);  digitalWrite(m2,LOW);delay(500);  
+}
+if((l1==HIGH)&&(l2==HIGH))
+{
+  lcd.clear();lcd.setCursor(0, 0); lcd.print("DARK-STOP");
+digitalWrite(m1,LOW);digitalWrite(m2,LOW);delay(1000);
+
+
+}
+if((l1==HIGH)&&(l2==LOW))
+{
+  lcd.clear();lcd.setCursor(0, 0); lcd.print("LIGHT-LEFT");
+digitalWrite(m1,HIGH);  digitalWrite(m2,LOW);delay(500);  
+}
+if((l1==LOW)&&(l2==HIGH))
+{
+  lcd.clear();lcd.setCursor(0, 0); lcd.print("LIGHT-RIGHT");
+digitalWrite(m1,LOW);  digitalWrite(m2,HIGH);delay(500);  
+}
+}
+}

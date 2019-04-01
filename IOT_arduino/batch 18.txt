@@ -1,0 +1,128 @@
+
+#include <LiquidCrystal.h>
+#include <SoftwareSerial.h>
+
+//SoftwareSerial mySerial(8, 9); // RX, TX
+const int m1 =  10;
+const int m2 =  11;
+int data=0,count=0,i,a,b;
+String val;
+unsigned int card1=0,amount1=200,amount2=500;
+ LiquidCrystal lcd(A0, A1, A2, A3, A4, A5);
+void okcheck();
+void setup()
+{
+ 
+  lcd.begin(16, 2);
+  Serial.begin(9600);
+    pinMode(m1, OUTPUT);pinMode(m2, OUTPUT);pinMode(13, OUTPUT);
+    digitalWrite(m1,LOW);digitalWrite(m2,LOW);delay(1000);digitalWrite(13,HIGH);delay(1000);
+    lcd.clear();lcd.print("Toll Collection");delay(1000);lcd.clear();
+}
+
+void loop()
+{
+  
+
+//digitalWrite(LED_BUILTIN, HIGH);Serial.println("siva 9381786997");delay(1000);
+lcd.clear();lcd.print("AT");Serial.println("AT\r\n");delay(1000);
+lcd.clear();lcd.print("ATE0");Serial.println("ATE0\r\n");delay(1000);
+//lcd.clear();lcd.print("ATD9381786997");Serial.println("ATD9381786997;\r\n");delay(10000);
+//lcd.clear();lcd.print("ATH");Serial.println("ATH\r\n");delay(1000);
+
+lcd.clear();lcd.print("AT");Serial.print("AT\r\n");delay(1000);
+lcd.clear();lcd.print("ATE0");Serial.print("ATE0\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CMGF=1");Serial.print("AT+CMGF=1\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CNMI=1,2,0,0");Serial.print("AT+CNMI=1,2,0,0\r\n");delay(1000);
+Serial.print("AT+CMGS=");
+Serial.print('"');
+Serial.print("9381786997");
+Serial.print('"');
+Serial.print("\r\n");delay(1000);
+Serial.print("WELCOME MESSAGE FROM ARDUINO BOARD");delay(100);
+Serial.write(0x1A);delay(5000);
+lcd.clear();lcd.print("READY TO USE......");
+while(1)
+{
+end:  
+val=Serial.readString();
+if(val=="26009FF0347D")
+{
+lcd.clear();lcd.print("VAILD CARD");delay(100);
+if(amount1<49)
+{
+lcd.clear();lcd.print("NO BAl IN THIS CARD");delay(1000);
+delay(100);digitalWrite(13,LOW);delay(100);delay(100);digitalWrite(13,HIGH);delay(100);
+delay(100);digitalWrite(13,LOW);delay(100);delay(100);digitalWrite(13,HIGH);delay(100);
+Serial.print("AT+CMGS=");
+Serial.print('"');
+Serial.print("9381786997");
+Serial.print('"');
+Serial.print("\r\n");delay(1000);
+Serial.print("NO bal inthis card ");delay(100);
+Serial.write(0x1A);delay(5000);
+lcd.clear();lcd.print("READY TO USE......"); 
+}
+if(amount1>=50)
+{
+amount1=amount1-45;  
+lcd.clear();lcd.print("45/-debit");delay(100);
+lcd.setCursor(0,1);lcd.print("Bal:");lcd.print(amount1);delay(1000);
+digitalWrite(m1,HIGH);digitalWrite(m2,LOW);delay(1000);
+digitalWrite(m1,LOW);digitalWrite(m2,LOW);delay(1000);
+digitalWrite(m1,LOW);digitalWrite(m2,HIGH);delay(1000);
+digitalWrite(m1,LOW);digitalWrite(m2,LOW);delay(1000);
+Serial.print("AT+CMGS=");
+Serial.print('"');
+Serial.print("9381786997");
+Serial.print('"');
+Serial.print("\r\n");delay(1000);
+Serial.print("45/-DEBIT FROM CARD BAL IS:");Serial.print(amount1);delay(100);
+Serial.write(0x1A);delay(5000);
+lcd.clear();lcd.print("READY TO USE......");
+}
+}
+
+if(val=="2600A011DF48")
+{
+lcd.clear();lcd.print("VAILD CARD");delay(100);
+if(amount2<49)
+{
+lcd.clear();lcd.print("NO BAl IN THIS CARD");delay(1000); 
+delay(100);digitalWrite(13,LOW);delay(100);delay(100);digitalWrite(13,HIGH);delay(100);
+delay(100);digitalWrite(13,LOW);delay(100);delay(100);digitalWrite(13,HIGH);delay(100);
+Serial.print("AT+CMGS=");
+Serial.print('"');
+Serial.print("9381786997");
+Serial.print('"');
+Serial.print("\r\n");delay(1000);
+Serial.print("NO BAL IN THIS CARD");delay(100);
+Serial.write(0x1A);delay(5000);
+lcd.clear();lcd.print("READY TO USE......");
+}
+if(amount2>=50)
+{
+amount2=amount2-45;  
+lcd.clear();lcd.print("45/-debit");delay(100);
+lcd.setCursor(0,1);lcd.print("Bal:");lcd.print(amount2);delay(1000);
+digitalWrite(m1,HIGH);digitalWrite(m2,LOW);delay(1000);
+digitalWrite(m1,LOW);digitalWrite(m2,LOW);delay(1000);
+digitalWrite(m1,LOW);digitalWrite(m2,HIGH);delay(1000);
+digitalWrite(m1,LOW);digitalWrite(m2,LOW);delay(1000);
+Serial.print("AT+CMGS=");
+Serial.print('"');
+Serial.print("9381786997");
+Serial.print('"');
+Serial.print("\r\n");delay(1000);
+Serial.print("45/-DEBIT FROM CARD BAL IS:");Serial.print(amount2);delay(100);
+Serial.write(0x1A);delay(5000);
+lcd.clear();lcd.print("READY TO USE......");
+}
+}
+
+
+
+
+} 
+}
+

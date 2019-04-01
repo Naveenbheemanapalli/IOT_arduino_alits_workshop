@@ -1,0 +1,122 @@
+
+#include <LiquidCrystal.h>
+#include <SoftwareSerial.h>
+
+const int light = 8;     // the number of the pushbutton pin
+const int fan =  9;      // the number of the LED pin
+const int buzzer=10;
+
+
+
+
+const int ir = 11;     // the number of the pushbutton pin
+
+int temp=0;
+int data=0,count=0;
+int irpin;     // the number of the pushbutton pin
+ int ldrpin;     // the number of the LED pin
+
+String a;
+char ch ,data1[61],rcv;
+ LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
+void okcheck();
+void setup()
+{
+ 
+  lcd.begin(16, 2);
+  Serial.begin(9600);
+    pinMode(ir, INPUT);
+
+      pinMode(light, OUTPUT);
+      pinMode(fan, OUTPUT);
+      pinMode(buzzer, OUTPUT);
+      delay(1000);digitalWrite(buzzer,HIGH);delay(1000);
+      digitalWrite(fan,LOW);delay(1000);
+      digitalWrite(light,LOW);delay(1000);
+   // mySerial.begin(9600);
+ // mySerial.println("Hello, world?");
+}
+void beep()
+{
+digitalWrite(buzzer,LOW);delay(400);digitalWrite(buzzer,HIGH);delay(400);  
+digitalWrite(buzzer,LOW);delay(400);digitalWrite(buzzer,HIGH);delay(400);
+}
+void loop()
+{ 
+lcd.clear();lcd.print("HOME MONITIRING");delay(1000);
+lcd.setCursor(0,1);lcd.print("& control system");delay(1000);   
+lcd.clear();lcd.print("AT");Serial.print("AT\r\n");delay(1000);
+lcd.clear();lcd.print("ATE0");Serial.print("ATE0\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CMGF=1");Serial.print("AT+CMGF=1\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CNMI=1,2,0,0");Serial.print("AT+CNMI=1,2,0,0\r\n");delay(1000);
+lcd.clear();lcd.print("CONTYPE GPRS");delay(1000);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("Contype");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("GPRS");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("APN WWW");delay(1000);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("APN");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("WWW");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("ACTIVATE HTTP");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(10000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);
+lcd.clear();lcd.print("IP ADDRESS");delay(1000);Serial.print("AT+SAPBR=2,1\r\n");delay(1000);
+lcd.clear();lcd.print("HTTP INIT");delay(1000);Serial.print("AT+HTTPINIT\r\n");delay(1000);
+lcd.clear();lcd.print("HTTPPARAMETER");delay(1000);Serial.print("AT+HTTPPARA=");Serial.print('"');Serial.print("URL");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("http://api.thingspeak.com/update?key=91SHW5GUCCRO6Y5M&field1=IOT BASED HOME SECURITY SYSTEM");Serial.print('"');Serial.print("\r\n");delay(3000);
+lcd.clear();lcd.print("HTTPACTION");delay(1000);Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);
+Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);
+while(1)
+{
+
+irpin=digitalRead(ir);delay(1000);
+if(irpin==LOW) 
+{
+delay(1000);lcd.clear();lcd.print("LIGHT");delay(1000); 
+beep();
+delay(1000);digitalWrite(light,LOW);delay(1000); 
+lcd.clear();lcd.print("CONTYPE GPRS");delay(1000);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("Contype");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("GPRS");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("APN WWW");delay(1000);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("APN");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("WWW");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("ACTIVATE HTTP");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(10000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);
+lcd.clear();lcd.print("IP ADDRESS");delay(1000);Serial.print("AT+SAPBR=2,1\r\n");delay(1000);
+lcd.clear();lcd.print("HTTP INIT");delay(1000);Serial.print("AT+HTTPINIT\r\n");delay(1000);
+lcd.clear();lcd.print("HTTPPARAMETER");delay(1000);Serial.print("AT+HTTPPARA=");Serial.print('"');Serial.print("URL");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("http://api.thingspeak.com/update?key=91SHW5GUCCRO6Y5M&field1=light sensor activated");Serial.print('"');Serial.print("\r\n");delay(3000);
+lcd.clear();lcd.print("HTTPACTION");delay(1000);Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);
+Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);
+}
+else
+{
+delay(1000);lcd.clear();lcd.print("DARK");delay(1000);  
+delay(1000);digitalWrite(light,HIGH);delay(1000);
+}
+temp=analogRead(A0);delay(1000);temp=temp/5;
+//lcd.clear();lcd.print("TEMPRATURE:");lcd.print(temp);delay(1000);
+ if(temp<50)
+ {
+delay(1000);lcd.clear();lcd.print("TEMP-ALERT");delay(1000); 
+beep(); 
+delay(1000);digitalWrite(fan,HIGH);delay(1000);
+lcd.clear();lcd.print("CONTYPE GPRS");delay(1000);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("Contype");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("GPRS");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("APN WWW");delay(1000);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("APN");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("WWW");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("ACTIVATE HTTP");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(10000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);
+lcd.clear();lcd.print("IP ADDRESS");delay(1000);Serial.print("AT+SAPBR=2,1\r\n");delay(1000);
+lcd.clear();lcd.print("HTTP INIT");delay(1000);Serial.print("AT+HTTPINIT\r\n");delay(1000);
+lcd.clear();lcd.print("HTTPPARAMETER");delay(1000);Serial.print("AT+HTTPPARA=");Serial.print('"');Serial.print("URL");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("http://api.thingspeak.com/update?key=91SHW5GUCCRO6Y5M&field1=TEMP ALERT");Serial.print('"');Serial.print("\r\n");delay(3000);
+lcd.clear();lcd.print("HTTPACTION");delay(1000);Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);
+Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);
+ }
+else
+{
+delay(1000);lcd.clear();lcd.print("TEMP-SAFE");delay(1000);  
+delay(1000);digitalWrite(fan,LOW);delay(1000); 
+}
+
+ 
+}
+}
+
+void okcheck()
+{
+  if(Serial.available()>0)
+
+  {
+    digitalWrite(LED_BUILTIN, HIGH);
+  
+  do
+  {
+    ch=Serial.read();
+    }while(ch!='K');
+  digitalWrite(LED_BUILTIN, LOW);
+}  
+}

@@ -1,0 +1,152 @@
+
+#include <LiquidCrystal.h>
+#include <SoftwareSerial.h>
+
+const int v1 = 8;     // the number of the pushbutton pin
+const int v2 =  9; 
+const int v3 =  10; 
+const int buzzer=13,motor=12;
+
+int temp=0;
+int data=0,count=0;
+
+int v1pin;     // the number of the pushbutton pin
+ int v2pin;     // the number of the LED pin
+ int v3pin;
+String a;
+char ch ,data1[61],rcv;
+ LiquidCrystal lcd(A0, A1, A2, A3, A4, A5);
+void okcheck();
+void setup()
+{
+ 
+  lcd.begin(16, 2);
+  Serial.begin(9600);
+   
+    pinMode(v1, INPUT);
+     pinMode(v2, INPUT);
+    
+      pinMode(buzzer, OUTPUT); pinMode(motor, OUTPUT);
+      delay(1000);digitalWrite(buzzer,HIGH);delay(1000);
+      digitalWrite(v1,HIGH);digitalWrite(v2,HIGH);digitalWrite(motor,LOW);delay(1000);
+   // mySerial.begin(9600);
+  lcd.print("  Driver Gaze ");delay(1200);
+  lcd.setCursor(0,1);lcd.print("Tracking System");delay(1000);
+    lcd.clear();lcd.print("AT");Serial.print("AT\r\n");delay(1000);
+lcd.clear();lcd.print("ATE0");Serial.print("ATE0\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CMGF=1");Serial.print("AT+CMGF=1\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CNMI=1,2,0,0");Serial.print("AT+CNMI=1,2,0,0\r\n");delay(1000);
+Serial.print("AT+CMGS=");
+Serial.print('"');
+Serial.print("7396499651");
+Serial.print('"');
+Serial.print("\r\n");delay(1000);
+Serial.print("DRIVER GAZE TRACKING SYSTEM");delay(100);
+Serial.write(0x1A);delay(10000);
+  }
+void beep()
+{
+digitalWrite(buzzer,LOW);delay(1000);digitalWrite(buzzer,HIGH);delay(1000);  
+digitalWrite(buzzer,LOW);delay(1000);digitalWrite(buzzer,HIGH);delay(1000);
+}
+void loop()
+{
+while(1)
+{
+//lcd.clear();lcd.print("EVERTHING IS SAFE");delay(1000);
+ v1pin=digitalRead(v1);
+if(v1pin==LOW)
+{
+beep();
+lcd.clear();delay(1000);lcd.print("IR ACTIVATED");delay(1000);
+ delay(1000);digitalWrite(motor,LOW);delay(1000);
+   lcd.clear();lcd.print("AT");Serial.print("AT\r\n");delay(1000);
+lcd.clear();lcd.print("ATE0");Serial.print("ATE0\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CMGF=1");Serial.print("AT+CMGF=1\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CNMI=1,2,0,0");Serial.print("AT+CNMI=1,2,0,0\r\n");delay(1000);
+Serial.print("AT+CMGS=");
+Serial.print('"');
+Serial.print("7396499651");
+Serial.print('"');
+Serial.print("\r\n");delay(1000);
+Serial.print("Eye blinking sensor activated");delay(100);
+Serial.write(0x1A);delay(10000);
+}
+else
+{
+lcd.clear();delay(1000);lcd.print("IR-CLEAR");delay(1000);  
+}
+v2pin=digitalRead(v2);
+if(v2pin==LOW)
+{
+beep();
+lcd.clear();delay(1000);lcd.print("ALCHOLE DETETCED");delay(100);
+ delay(1000);digitalWrite(motor,LOW);delay(1000);
+   lcd.clear();lcd.print("AT");Serial.print("AT\r\n");delay(1000);
+lcd.clear();lcd.print("ATE0");Serial.print("ATE0\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CMGF=1");Serial.print("AT+CMGF=1\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CNMI=1,2,0,0");Serial.print("AT+CNMI=1,2,0,0\r\n");delay(1000);
+Serial.print("AT+CMGS=");
+Serial.print('"');
+Serial.print("7396499651");
+Serial.print('"');
+Serial.print("\r\n");delay(1000);
+Serial.print("Alchole Detetcted");delay(100);
+Serial.write(0x1A);delay(10000);
+}
+else
+{
+lcd.clear();delay(1000);lcd.print("ALCHOLE-CLEAR");delay(1000);  
+}
+
+v3pin=digitalRead(v3);
+if(v3pin==HIGH)
+{
+beep();
+lcd.clear();delay(1000);lcd.print("SEAT-ALERT");delay(1000);
+ delay(1000);digitalWrite(motor,LOW);delay(1000);
+   lcd.clear();lcd.print("AT");Serial.print("AT\r\n");delay(1000);
+lcd.clear();lcd.print("ATE0");Serial.print("ATE0\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CMGF=1");Serial.print("AT+CMGF=1\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CNMI=1,2,0,0");Serial.print("AT+CNMI=1,2,0,0\r\n");delay(1000);
+Serial.print("AT+CMGS=");
+Serial.print('"');
+Serial.print("7396499651");
+Serial.print('"');
+Serial.print("\r\n");delay(1000);
+Serial.print("plz wear Seat belt first");delay(100);
+Serial.write(0x1A);delay(10000);
+}
+else
+{
+lcd.clear();delay(1000);lcd.print("SEAT BELT-CLEAR");delay(1000);  
+}
+
+
+
+if((v3pin==LOW)&&(v2pin==HIGH)&&(v1pin==HIGH))
+{
+ delay(1000);digitalWrite(motor,HIGH);delay(100); 
+}
+else
+{
+  delay(1000);digitalWrite(motor,LOW);delay(100);
+}
+
+}
+}
+
+void okcheck()
+{
+  if(Serial.available()>0)
+
+  {
+    digitalWrite(LED_BUILTIN, HIGH);
+  
+  do
+  {
+    ch=Serial.read();
+    }while(ch!='K');
+  digitalWrite(LED_BUILTIN, LOW);
+}  
+}

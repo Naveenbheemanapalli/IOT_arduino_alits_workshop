@@ -1,0 +1,153 @@
+#include <LiquidCrystal.h>
+#include <SoftwareSerial.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+SoftwareSerial mySerial(10, 11); // RX, TX
+const int rs = A0, en = A1, d4 = A2, d5 = A3, d6 = A4, d7 = A5;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+String data;
+#define b1 2
+#define b2 3
+#define b3 4
+#define m1 8
+#define m2 9
+#define buzzer 13
+unsigned int count=0,source,destination;
+unsigned char key[2];
+unsigned int temp=0;
+signed int val=0;
+void setup() {
+   pinMode(b1, INPUT);
+  pinMode(b2, INPUT);
+  pinMode(b3, INPUT);
+  digitalWrite(b1,HIGH);
+   digitalWrite(b2,HIGH);
+    digitalWrite(b3,HIGH);
+pinMode(m1,OUTPUT);
+pinMode(m2,OUTPUT);
+pinMode(buzzer,OUTPUT);digitalWrite(buzzer,HIGH);
+  Serial.begin(9600);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
+  digitalWrite(m1,LOW);digitalWrite(m2,LOW);delay(100);
+
+
+  //Serial.println("Goodnight moon!");
+
+  // set the data rate for the SoftwareSerial port
+  mySerial.begin(9600);
+ lcd.clear();lcd.print("EZEE LINK CARD");delay(1000);
+ lcd.clear();lcd.print("PLZ INSERT CARD..");
+}
+
+void loop() { // run over and over
+ // lcd.clear();lcd.print("PLZ INSERT CARD....");delay(1000);
+  if(mySerial.available()>0)
+  {
+  data=mySerial.readString();
+  //lcd.clear();lcd.print(data);delay(1000);
+  if((data[0]=='E')&&(data[14]==':'))
+  {
+  mySerial.print("AAA\r\n"); 
+  data=mySerial.readString();
+ // lcd.clear();lcd.print(data);delay(1000); 
+  mySerial.print("READ 40 3\r\n");
+   data=mySerial.readString();
+   lcd.clear();lcd.print("DATA:");lcd.print(data);delay(1000);
+   if((data[0]=='1')&&(data[1]=='2')&&(data[2]=='3'))
+   {
+    lcd.clear();delay(100);lcd.print("plz remove card");delay(10000);
+    lcd.clear();lcd.print("ENTER PRESENT STOP");delay(1000);
+    lcd.clear();
+     do
+  {
+   int i=digitalRead(b1);
+  int d=digitalRead(b3);
+  int e=digitalRead(b2);
+
+  if(i==LOW)
+  {
+   val=val+1; 
+   if(val==10)
+   val=0;
+   lcd.setCursor( temp,0);lcd.print(val);delay(500);
+  }
+  if(d==LOW)
+  {
+   val=val-1;
+   if(val<0)
+   val=9;
+   if(val>9)
+   val=0; 
+   lcd.setCursor(temp,0);lcd.print(val);delay(500);
+  }
+  
+if(e==LOW)
+{
+ key[temp]=val;
+ lcd.setCursor(temp,0);lcd.print(val);delay(500);
+ temp=temp+1;
+ val=0;
+}
+  }while(temp<=1);
+if(temp==2)
+ {
+  lcd.clear();lcd.setCursor(3,1);
+  lcd.print("key=");delay(1000);
+  lcd.print(key[0]);delay(1000);
+  lcd.print(key[1]);delay(1000);
+ 
+  temp=0;
+  count=count+1;delay(1000);
+  if((key[0]==0)&&(key[1]==1)){ val=1;}
+  if((key[0]==0)&&(key[1]==2)){ val=2;}
+  if((key[0]==0)&&(key[1]==3)){ val=3;}
+  if((key[0]==0)&&(key[1]==4)){ val=4;}
+  if((key[0]==0)&&(key[1]==5)){ val=5;}
+  if((key[0]==0)&&(key[1]==6)){ val=6;}
+  if((key[0]==0)&&(key[1]==7)){ val=7;}
+  if((key[0]==0)&&(key[1]==8)){ val=8;}
+  if((key[0]==0)&&(key[1]==9)){ val=9;}
+  if(count==1)
+  {
+   source=val;
+  lcd.clear();lcd.print("source:");delay(1000);lcd.print(val);delay(3000);   
+  
+  }
+  if(count==2)
+  {
+    destination=val;
+  lcd.clear();lcd.print("Ending:");delay(1000);lcd.print(destination);delay(1000);  
+  count=0;  
+  int amount=(destination-source)*10;delay(1000);
+  lcd.clear();lcd.print("Amount:");lcd.print(amount);lcd.print("Debit");delay(5000);
+  lcd.setCursor(0,1);lcd.print("Thank'u'   ");delay(1000);
+  }
+ 
+ }
+
+ 
+    lcd.clear();delay(1000);lcd.print("Plz go inside");
+    lcd.setCursor(0,1);lcd.print("Door open");delay(1000);
+    digitalWrite(m1,HIGH);digitalWrite(m2,LOW);delay(1000);
+    digitalWrite(m1,LOW);digitalWrite(m2,LOW);delay(1000);
+    lcd.clear();delay(1000);lcd.print("Thanku...");
+    lcd.setCursor(0,1);lcd.print("Door Closed");delay(1000);
+    digitalWrite(m2,HIGH);digitalWrite(m1,LOW);delay(1000);
+    digitalWrite(m1,LOW);digitalWrite(m2,LOW);delay(1000);
+    Serial.flush();data="";
+   }
+   else
+   {
+   delay(1000);Serial.print("not a valid card");delay(1000);lcd.clear();delay(1000);lcd.print("not a valid card"); 
+   digitalWrite(buzzer,LOW);delay(1000);digitalWrite(buzzer,HIGH);delay(1000);
+   digitalWrite(buzzer,LOW);delay(1000);digitalWrite(buzzer,HIGH);delay(1000);
+   Serial.flush();data="";
+   }
+   
+   }
+   
+}
+}

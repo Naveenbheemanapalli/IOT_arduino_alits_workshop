@@ -1,0 +1,1 @@
+https://thingspeak.com/channels/562742/field/1.json

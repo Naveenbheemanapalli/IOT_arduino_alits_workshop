@@ -1,0 +1,108 @@
+
+#include <LiquidCrystal.h>
+//#include <SoftwareSerial.h>
+
+//SoftwareSerial mySerial(8, 9); // RX, TX
+
+int data=0,count=0;
+String a;
+char ch ,data1[61],rcv;
+ LiquidCrystal lcd(A0, A1, A2, A3, A4, A5);
+
+ const int buzzer = 8;  
+void okcheck();
+void setup()
+{
+ 
+  lcd.begin(16, 2);
+  Serial.begin(9600);
+    pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(buzzer, OUTPUT);
+ digitalWrite(buzzer,HIGH);delay(1000);
+  lcd.clear();lcd.print("ATTENDANCE SYSTEM");delay(500);lcd.setCursor(0, 1);lcd.print("Using I0T");delay(1000);
+}
+
+void loop()
+{
+lcd.clear();lcd.print("AT");Serial.print("AT\r\n");delay(1000);
+lcd.clear();lcd.print("ATE0");Serial.print("ATE0\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CMGF=1");Serial.print("AT+CMGF=1\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CNMI=1,2,0,0");Serial.print("AT+CNMI=1,2,0,0\r\n");delay(1000);
+lcd.clear();lcd.print("AT+SAPBR=3,1 CONTYPE");delay(500);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("Contype");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("GPRS");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("AT+SAPBR=3,1 APN");delay(500);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("APN");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("WWW");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("AT+SAPBR=1,1 INIT");delay(500);Serial.print("AT+SAPBR=1,1\r\n");delay(10000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);
+lcd.clear();lcd.print("IP ADDRESS");delay(500);Serial.print("AT+SAPBR=2,1\r\n");delay(1000);
+lcd.clear();lcd.print("HTTPINIT");delay(500);Serial.print("AT+HTTPINIT\r\n");delay(1000);
+lcd.clear();lcd.print("AT+HTTPPARA");delay(500);Serial.print("AT+HTTPPARA=");Serial.print('"');Serial.print("URL");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("http://api.thingspeak.com/update?key=91SHW5GUCCRO6Y5M&field1=student/Employee Attendance System");Serial.print('"');Serial.print("\r\n");delay(3000);
+lcd.clear();lcd.print("AT+HTTPACTION");delay(500);Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);
+lcd.clear();lcd.print("AT+HTTPPACTION");delay(500);Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);
+lcd.clear();lcd.print("Plz show u r card..");delay(500);
+while(1)
+{
+while(Serial.available()==0)
+{
+}
+String rfid=Serial.readString();
+
+//Serial.println((rfid));
+if(rfid=="210020E329CB")
+{
+delay(1000);lcd.clear();delay(100);lcd.print("STUDENT-1");delay(1000); 
+lcd.clear();lcd.print("AT");Serial.print("AT\r\n");delay(1000);
+lcd.clear();lcd.print("ATE0");Serial.print("ATE0\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CMGF=1");Serial.print("AT+CMGF=1\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CNMI=1,2,0,0");Serial.print("AT+CNMI=1,2,0,0\r\n");delay(1000);
+lcd.clear();lcd.print("AT+SAPBR=3,1 CONTYPE");delay(500);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("Contype");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("GPRS");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("AT+SAPBR=3,1 APN");delay(500);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("APN");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("WWW");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("AT+SAPBR=1,1 INIT");delay(500);Serial.print("AT+SAPBR=1,1\r\n");delay(10000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);
+lcd.clear();lcd.print("IP ADDRESS");delay(500);Serial.print("AT+SAPBR=2,1\r\n");delay(1000);
+lcd.clear();lcd.print("HTTPINIT");delay(500);Serial.print("AT+HTTPINIT\r\n");delay(1000);
+lcd.clear();lcd.print("AT+HTTPPARA");delay(500);Serial.print("AT+HTTPPARA=");Serial.print('"');Serial.print("URL");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("http://api.thingspeak.com/update?key=91SHW5GUCCRO6Y5M&field1=STUDENT-1");Serial.print('"');Serial.print("\r\n");delay(3000);
+lcd.clear();lcd.print("AT+HTTPACTION");delay(500);Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);
+lcd.clear();lcd.print("AT+HTTPPACTION");delay(500);Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);
+lcd.clear();lcd.print("Plz show u r card..");delay(500);
+} 
+
+else if(rfid=="210020E36684")
+{
+delay(1000);lcd.clear();delay(100);lcd.print("STUDENT-2");delay(1000); 
+lcd.clear();lcd.print("AT");Serial.print("AT\r\n");delay(1000);
+lcd.clear();lcd.print("ATE0");Serial.print("ATE0\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CMGF=1");Serial.print("AT+CMGF=1\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CNMI=1,2,0,0");Serial.print("AT+CNMI=1,2,0,0\r\n");delay(1000);
+lcd.clear();lcd.print("AT+SAPBR=3,1 CONTYPE");delay(500);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("Contype");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("GPRS");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("AT+SAPBR=3,1 APN");delay(500);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("APN");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("WWW");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("AT+SAPBR=1,1 INIT");delay(500);Serial.print("AT+SAPBR=1,1\r\n");delay(10000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);
+lcd.clear();lcd.print("IP ADDRESS");delay(500);Serial.print("AT+SAPBR=2,1\r\n");delay(1000);
+lcd.clear();lcd.print("HTTPINIT");delay(500);Serial.print("AT+HTTPINIT\r\n");delay(1000);
+lcd.clear();lcd.print("AT+HTTPPARA");delay(500);Serial.print("AT+HTTPPARA=");Serial.print('"');Serial.print("URL");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("http://api.thingspeak.com/update?key=91SHW5GUCCRO6Y5M&field1=STUDENT-2");Serial.print('"');Serial.print("\r\n");delay(3000);
+lcd.clear();lcd.print("AT+HTTPACTION");delay(500);Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);
+lcd.clear();lcd.print("AT+HTTPPACTION");delay(500);Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);
+lcd.clear();lcd.print("Plz show u r card..");delay(500);
+} 
+else if(rfid=="210020F67B8C")
+{
+delay(1000);lcd.clear();delay(100);lcd.print("STUDENT-3");delay(1000); 
+lcd.clear();lcd.print("AT");Serial.print("AT\r\n");delay(1000);
+lcd.clear();lcd.print("ATE0");Serial.print("ATE0\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CMGF=1");Serial.print("AT+CMGF=1\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CNMI=1,2,0,0");Serial.print("AT+CNMI=1,2,0,0\r\n");delay(1000);
+lcd.clear();lcd.print("AT+SAPBR=3,1 CONTYPE");delay(500);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("Contype");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("GPRS");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("AT+SAPBR=3,1 APN");delay(500);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("APN");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("WWW");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("AT+SAPBR=1,1 INIT");delay(500);Serial.print("AT+SAPBR=1,1\r\n");delay(10000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);
+lcd.clear();lcd.print("IP ADDRESS");delay(500);Serial.print("AT+SAPBR=2,1\r\n");delay(1000);
+lcd.clear();lcd.print("HTTPINIT");delay(500);Serial.print("AT+HTTPINIT\r\n");delay(1000);
+lcd.clear();lcd.print("AT+HTTPPARA");delay(500);Serial.print("AT+HTTPPARA=");Serial.print('"');Serial.print("URL");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("http://api.thingspeak.com/update?key=91SHW5GUCCRO6Y5M&field1=STUDENT-3");Serial.print('"');Serial.print("\r\n");delay(3000);
+lcd.clear();lcd.print("AT+HTTPACTION");delay(500);Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);
+lcd.clear();lcd.print("AT+HTTPPACTION");delay(500);Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);
+lcd.clear();lcd.print("Plz show u r card..");delay(500);
+}
+else
+{
+  delay(1000);lcd.clear();delay(100);lcd.print("INVALID CARD ");delay(1000);
+ digitalWrite(buzzer,LOW);delay(1000); digitalWrite(buzzer,HIGH);delay(1000);
+  digitalWrite(buzzer,LOW);delay(1000); digitalWrite(buzzer,HIGH);delay(1000); 
+  lcd.clear();lcd.print("Plz show u r card..");delay(500);
+}
+}
+}

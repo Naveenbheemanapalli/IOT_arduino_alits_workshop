@@ -1,0 +1,57 @@
+
+#include <LiquidCrystal.h>
+//#include <SoftwareSerial.h>
+
+//SoftwareSerial mySerial(8, 9); // RX, TX
+
+int data=0,count=0;
+String a;
+char ch ,data1[61],rcv;
+ LiquidCrystal lcd(A0, A1, A2, A3, A4, A5);
+
+ const int buzzer = 8;  
+void okcheck();
+void setup()
+{
+ 
+  lcd.begin(16, 2);
+  Serial.begin(9600);
+    pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(buzzer, OUTPUT);
+ 
+  lcd.clear();lcd.print("Examination");delay(500);lcd.setCursor(0, 1);lcd.print("Room Guide System");delay(1000);
+lcd.clear();lcd.print("Show u r card plzz");
+}
+
+void loop()
+{
+while(1)
+{
+while(Serial.available()==0)
+{
+}
+String rfid=Serial.readString();
+Serial.println((rfid));
+if(rfid=="21001FF6F830")
+{
+delay(1000);lcd.clear();delay(100);
+lcd.print("VAMSI KRISHNA");delay(1000);
+lcd.setCursor(0,1);lcd.print("RM:01 SEAT:10");delay(1000);
+lcd.clear();lcd.print("Show u r card plzz"); 
+} 
+if(rfid=="21001EE15C82")
+{
+delay(1000);lcd.clear();delay(100);
+lcd.print("DIVYA");delay(1000);
+lcd.setCursor(0,1);lcd.print("RM:01 SEAT:09");delay(1000);
+lcd.clear();lcd.print("Show u r card plzz"); 
+} 
+if(rfid=="2100207D7905")
+{
+delay(1000);lcd.clear();delay(100);
+lcd.print("ANITHA");delay(1000);
+lcd.setCursor(0,1);lcd.print("RM:01 SEAT:08");delay(1000);
+lcd.clear();lcd.print("Show u r card plzz"); 
+}
+}
+}

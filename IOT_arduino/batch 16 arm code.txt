@@ -1,0 +1,381 @@
+#include <lpc214x.h>
+#include <string.h>
+#include<stdio.h>
+#include"gpio.h"
+#include"lcd.h"
+#include"serial.h"
+#include"gsm.h"
+#include"adc0.h"
+#include"iot.h"
+
+#define m1 P0_4
+#define m2 P0_5
+#define m3 P0_6
+#define m4 P0_7
+
+
+
+#define s1 P1_24
+#define s2 P1_25
+#define s3 P1_26
+#define s4 P1_27
+
+#define s5 P1_28
+#define s6 P1_29
+#define s7 P1_30
+#define s8 P1_31
+
+
+#define r1   P0_2
+#define r2   P0_3
+
+
+
+unsigned char gchr='x',gchr1='x',gchr2='x',gchr3='x',gchr4='x',gchr5='x',gchr6='x',ch='x',strx[4]="0000",stry[4]="0000",strz[4]="0000";
+unsigned long int pressure=0,heartbeat=0,h_count,l_count,loop,status;
+unsigned int temp,x=100,y=200,z=300;
+
+unsigned int card=0,set1=0,set2=0,set3=0,hb=0,cnt=0,ht=0;
+unsigned char rfid_t[15],rfid_0[13]="2100208576F2\0",rfid_1[13]="21001FE45F85\0",rfid_2[13]="21001B6EEABE\0",rfid_3[13]="FE006E2F5BE4\0";
+unsigned char mob1[11];
+unsigned char mob2[11];//="9949705803\0";
+unsigned char rf=0,rfid[13];
+unsigned char rec=0;
+unsigned char iotval;
+ int lp1;
+
+
+void serial0_RxISR(void) __irq; 
+void serial1_RxISR(void) __irq; 
+
+ int set=1;
+
+
+
+unsigned long int as1()
+{
+ AD0CR&=0XFFFFFF00;
+ AD0CR|=0X01000002;
+ //delay(500);
+  while(!(AD0DR1&0X80000000));
+ return ((AD0DR1 >> 6) & 0x03FF);
+}
+unsigned long int as2()
+{
+ AD0CR&=0XFFFFFF00;
+ AD0CR|=0X01000004;
+ //delay(500);
+ while(!(AD0DR2&0X80000000));
+ return((AD0DR2 >> 6) & 0x03FF);
+}
+void pin()
+{
+ PINSEL0=0X00050005;//SELECTING PIN OPERATION
+ PINSEL1=0X15000000;
+ PINSEL2=0X00000000;
+ IODIR1=0XFFFFFFFF;//PORT1 AS OUTPUT
+ IODIR1 &= ~(s1|s2|s3|s4|s5|s6|s7|s8);
+ IODIR0=0xffffffff;
+ //IODIR1=0XFFFFFFFF;//PORT1 AS OUTPUT
+ IOCLR1=0XFFFFFFFF;
+ AD0CR=0X00210600;// ADC CONTROL REGISTER
+//IOPIN0|=0X0000001C;
+ //IOSET0=sensor1|sensor2;
+ 
+}
+int inp1(int pinNumber)
+{
+  // Read the current state of all pins in GPIO block 0
+  int pinBlockState = IOPIN1;
+
+  // Read the value of 'pinNumber'
+  int pinState = (pinBlockState & (/*1 <<*/ pinNumber)) ? 1 : 0;
+
+  // Return the value of pinState
+  return pinState;
+}
+
+void InitSerial0Int(unsigned isrPtr)
+{
+  U0IER = 0x01;
+  VICVectCntl0 	= 0x00000026;  						//select a priority slot for a given interrupt  
+  VICVectAddr0 	= (unsigned long)isrPtr;		//pass the address of the IRQ into the VIC slot 
+  VICIntEnable 	|= 0x00000040;						//enable interrupt2
+}
+
+
+
+void InitSerial1Int(unsigned isrPtr)
+{
+  U1IER = 0x01;
+  VICVectCntl1 	= 0x00000027;  						//select a priority slot for a given interrupt  
+  VICVectAddr1 	= (unsigned long)isrPtr;		//pass the address of the IRQ into the VIC slot 
+  VICIntEnable 	|= 0x00000080;						//enable interrupt2
+}
+
+unsigned char rcv,r,q,rcv1,rcv2,rcv3,rcv4,rcv5,count=0,gps_location[26],msg1[12]="1726.4778.N",msg2[13]="07826.7455,E",rcvchk;
+void gps()
+{
+ag:
+    for(q=0;q<12;q++) 
+	    msg1[q] = '\0';
+
+	for(q=0;q<13;q++) 
+	    msg2[q] = '\0';	  
+		
+			do{
+    	       rcv=receive_1();
+              }while(rcv != '$'); 
+
+	  	
+	     rcv1=receive_1();
+		 rcv2=receive_1();
+		 rcv3=receive_1();
+		 rcv4=receive_1();
+		 rcv5=receive_1(); 
+
+        if((rcv1 == 'G') && (rcv2 == 'P') && (rcv3 == 'R') && (rcv4 == 'M') && (rcv5 == 'C'))
+	      {
+			
+			  for(r=0;r<12;r++)	 //12
+			    {
+				  rcv=receive_1();
+				}
+				rcvchk=receive_1();
+				rcv=receive_1();
+			
+                for(r=0;r<11;r++)
+			    {
+				  msg1[r]=receive_1();  //lat
+				}
+				// rcv=receive_1();	rcv=receive_1(); rcv=receive_1();
+			    for(r=0;r<12;r++)
+
+			    {
+				  msg2[r]=receive_1();  //long
+				}
+
+
+	    }
+	else
+	{
+	 goto ag;
+	}
+ 
+}
+extern  okcheck()
+{
+ unsigned char rr;
+  do{
+      rr = receive_0();
+    }while(rr != 'K'); 
+}
+
+
+void okc()
+{
+ unsigned char rr;
+  do{
+      rr = receive_1();
+    }while(rr != 'K'); 
+}
+
+void wifiinit()
+{
+	stringlcd(0x80,"Wifi Initilizing");
+	string_1("AT\r\n");	delay(1500);
+	//okc();
+	string_1("ATE0\r\n");
+	okc();
+	string_1("AT+CWMODE=3\r\n");
+	delay(1500);
+//	string_0("AT+CWSAP=\"org_6547\",\"connectnow\",5,0\r\n");
+	delay(1500);
+	string_1("AT+CIPMUX=1\r\n");
+	delay(1500);
+	string_1("AT+CIPSERVER=1,23\r\n");
+	delay(1500);
+	stringlcd(0x80,"WAITING FOR CONNCT");
+	
+}
+ void storenumber()
+ {
+  delay(1000);clcd(1);stringlcd(0x01,"AT");string_0("AT\r\n");okcheck();
+	 delay(1000);clcd(1);stringlcd(0x01,"ATE0");string_0("ATE0\r\n");okcheck();	
+	 delay(1000);clcd(1);stringlcd(0x01,"AT+CMGF=1");string_0("AT+CMGF=1\r\n");okcheck();	  
+	 delay(1000);clcd(1);stringlcd(0x01,"AT+CNMI=1,2,0,0");string_0("AT+CNMI=1,2,0,0\r\n");okcheck();
+     delay(1000);clcd(1);stringlcd(0x80,"Send Msg To Store");stringlcd(0xc0,"Mobile Number");	
+			
+	 do{
+	     rec = receive_0();
+	    }while(rec != '*');
+					 
+	 for(lp1=0;lp1<10;lp1++)
+	    {
+		 mob1[lp1] = receive_0();
+		}		  
+	   clcd(1);
+	   stringlcd(0x80,mob1);delay(1000);
+	   stringlcd(0xc0,"Processing....!");delay(2000);
+	   string_0("AT+CMGS=\"");string_0(mob1);string_0("\"\r\n");delay(1500);
+       //do{ch = receive_0();}while(ch != '>'); 
+	   string_0("Number Regestred");send_0(0x1a);delay(2000);clcd(1);
+		}
+
+void main()		   
+{
+
+
+/*
+{"channel":{"id":562742,"name":"Embedded systems","latitude":"0.0","longitude":"0.0","field1":"Field Label 1","field2":"Field Label 2","created_at":"2018-08-23T09:44:24+05:30","updated_at":"2018-09-04T10:35:38+05:30","last_entry_id":1},"feeds":[{"created_at":"2018-11-21T16:55:20+05:30","entry_id":1,"field1":"2"}]}
+
+*/
+
+     pin();
+	 card=0;	   
+	 IOCLR0=r1;IOCLR0=r2; 
+	 IO1SET=s1;IO1SET=s2;IO1SET=s3;IO1SET=s4;
+	 ser_init_0(0x61,0x00);ser_init_1(0x61,0x00); 
+     initlcd();
+     stringlcd(0x80,"Hello World......!");delay(500);stringlcd(0xC0,"Project Tittle ?? ");delay(1000);clcd(1);
+     storenumber();
+	 sendmsg(mob1,"MOBILE NUMBER REGISTERED");
+	 //thingspeak_loaddata("http://api.thingspeak.com/update?key=154V2WPYDD17XH9S&field1=","sivaji datapoint hyderabad");
+     //iotval=thingspeak_read();
+	 //clcd(0xc0);stringlcd(0xc0,"Data:");dlcd(iotval);delay(5000);
+	   // InitSerial0Int((unsigned int)serial0_RxISR);	
+	    //InitSerial1Int((unsigned int)serial1_RxISR);
+		 //InitSerial1Int((unsigned int)serial1_RxISR);
+while(1)
+{
+	 ser_init_0(0x61,0x00);ser_init_1(0x61,0x00); 
+ser_init_1(0x61,0x00); delay(2000);
+for(ch=0;ch<12;ch++)
+  {
+  rfid_t[ch]='\0';delay(1000);
+  }
+ser_init_1(0x61,0x00); delay(2000);
+ stringlcd(0x01,"PLACE U R CARD");
+for(ch=0;ch<12;ch++)
+  {
+  rfid_t[ch]=receive_1();
+  }
+  stringlcd(0x80,"RFID CARD NUMBER IS");
+  stringlcd(0xc0,rfid_t);delay(1000);
+  //sendmsg(mob1,"...............");
+  if(strcmp(rfid_t,rfid_0)==0)
+  {
+  card = 1;	 stringlcd(0x01,"RFID CARD-1");delay(2000);
+
+  }
+  if(strcmp(rfid_t,rfid_1)==0)
+  {
+  card = 2;  stringlcd(0x01,"RFID CARD-2");delay(2000);
+  }
+  if(strcmp(rfid_t,rfid_2)==0)
+  {
+  card = 3;  stringlcd(0x01,"RFID CARD-3");delay(2000);
+  }
+ if(card==1)
+ {
+  
+  delay(1000);stringlcd(0x01,rfid_t);delay(1000);
+  delay(1000);stringlcd(0x01,"VIP VEHICLE");delay(1000);
+  sendmsg(mob1,"VIP VEHICLE");
+ }
+ if(card==2)
+ {
+  delay(1000);stringlcd(0x01,rfid_t);delay(1000);
+  delay(1000);stringlcd(0x01,"STOLEN VEHICLE");delay(1000);
+ sendmsg(mob1,"STOLEN VEHICLE");
+ }
+ if(card==3)
+ {
+  delay(1000);stringlcd(0x01,rfid_t);delay(1000);
+  delay(1000);stringlcd(0x01,"GOVT VEHICLE");delay(1000);
+ sendmsg(mob1,"GOVT VEHICLE");
+ }
+  
+}
+	  	
+ }
+ 
+ 
+									
+void serial0_RxISR(void) __irq 
+{
+ unsigned char rec1;			 
+  rec1 = receive_0();
+  if(rec1 == '*')
+    {
+	 gchr1 = receive_0();
+	}
+	clcd(1);dlcd(gchr1);
+	if(gchr1=='2')
+	{
+	 
+        IOSET0=r1;
+		IOCLR0=r2;
+	
+		
+
+
+//	 	string_0("AT+CMGS=\"");
+//		string_0(mob1);
+//		string_0("\"\r\n");delay(1500);
+//		string_0("LIGHT1-0N");
+//		 send_0(0x1a);delay(100);
+//		 gchr1=='0';
+	}
+	if(gchr1=='3')
+	{
+	 
+        IOSET0=r2;
+		IOCLR0=r1;
+	 }
+	 	if(gchr1=='5')
+	{
+	 
+        IOCLR0=r1;
+		IOCLR0=r2;
+	   }
+	  	if(gchr1=='6')
+	{
+	 
+        IOSET0=r1;
+		IOSET0=r2;
+	   }
+
+		
+  VICVectAddr 	= 0x00000000;						//Dummy write to signal end of interrupt
+} 
+
+
+void serial1_RxISR(void) __irq 
+{
+ 
+ unsigned char ch;
+
+  for(ch=0;ch<12;ch++)
+  {
+  rfid_t[ch]=receive_1();
+  }
+  stringlcd(0x80,"RFID CARD NUMBER IS");
+  stringlcd(0xc0,rfid_t);delay(1000);
+  sendmsg(mob1,"...............");
+  if(strcmp(rfid_t,rfid_0)==0)
+  {
+  card = 1;	 stringlcd(0x01,"RFID CARD-1");
+
+  }
+  if(strcmp(rfid_t,rfid_1)==0)
+  {
+  card = 2;  stringlcd(0x01,"RFID CARD-2");
+  }
+  if(strcmp(rfid_t,rfid_2)==0)
+  {
+  card = 3;  stringlcd(0x01,"RFID CARD-3");
+  }
+  VICVectAddr = 0x00000000;						//Dummy write to signal end of interrupt
+}
+																                  

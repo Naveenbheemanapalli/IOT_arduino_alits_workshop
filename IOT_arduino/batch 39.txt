@@ -1,0 +1,105 @@
+#include <LiquidCrystal.h>
+LiquidCrystal lcd(A0, A1, A2, A3, A4, A5);
+
+const int buttonPin1 = 2;
+const int buttonPin2 = 3;
+const int buttonPin3 = 4;
+const int buttonPin4 = 5;
+int buttonState1 = 0;
+int buttonState2= 0;
+int buttonState3= 0;
+int buttonState4= 0;
+const int M1 = 6;const int M2 = 7;
+const int M3 = 8;const int M4 = 9;
+void setup() 
+{
+  lcd.begin(16, 2);
+  pinMode(buttonPin1, INPUT);
+  pinMode(buttonPin2, INPUT);
+  pinMode(buttonPin3, INPUT);
+  pinMode(buttonPin4, INPUT);
+  pinMode(M1, OUTPUT);pinMode(M2, OUTPUT);pinMode(M3, OUTPUT);pinMode(M4, OUTPUT);
+   lcd.setCursor(0, 0);  lcd.print("SAFE SWITCH OF");delay(1000);//lcd.clear();
+   lcd.setCursor(0, 1);  lcd.print("HYBRID VOLTAGE");delay(1000);lcd.clear();
+}
+
+void loop() {
+  // int sensorValue = analogRead(A0);
+   //lcd.print(sensorValue);delay(500);
+ while(1)
+ {
+  buttonState1 = digitalRead(buttonPin1);
+  buttonState2 = digitalRead(buttonPin2);
+  buttonState3 = digitalRead(buttonPin3);
+  buttonState4 = digitalRead(buttonPin4);
+ if (buttonState1 == HIGH) 
+ {
+ lcd.setCursor(0, 1);lcd.print("1");
+  }
+  if (buttonState1 == LOW) 
+ {
+ lcd.setCursor(0, 1);lcd.print("0");
+  }
+
+
+if (buttonState2 == HIGH) 
+ {
+ lcd.setCursor(1, 1);lcd.print("1");
+  }
+  if (buttonState2 == LOW) 
+ {
+ lcd.setCursor(1, 1);lcd.print("0");
+  }
+
+  if (buttonState3 == HIGH) 
+ {
+ lcd.setCursor(2, 1);lcd.print("1");
+  }
+  if (buttonState3 == LOW) 
+ {
+ lcd.setCursor(2, 1);lcd.print("0");
+  }
+
+
+  if (buttonState4 == HIGH) 
+ {
+ lcd.setCursor(3, 1);lcd.print("1");
+  }
+  if (buttonState4 == LOW) 
+ {
+ lcd.setCursor(3, 1);lcd.print("0");
+  }
+   delay(1000);
+if((buttonState1==HIGH)&&(buttonState2==HIGH)&&(buttonState3==HIGH)&&(buttonState4==HIGH))
+   {
+   lcd.clear();lcd.setCursor(4, 1);lcd.print("NO ACTION"); 
+   //digitalWrite(M1,LOW); digitalWrite(M2,LOW); digitalWrite(M3,LOW); digitalWrite(M4,LOW);
+   }
+   if((buttonState1==LOW)&&(buttonState2==HIGH)&&(buttonState3==HIGH)&&(buttonState4==HIGH))
+   {
+    lcd.clear();lcd.setCursor(4, 1);lcd.print("LOAD-1 0N"); 
+   digitalWrite(M1,HIGH); delay(1000);
+   }
+   if((buttonState1==HIGH)&&(buttonState2==LOW)&&(buttonState3==HIGH)&&(buttonState4==HIGH))
+   {
+    lcd.clear();lcd.setCursor(4, 1);lcd.print("load-1 0ff "); 
+   digitalWrite(M1,LOW); delay(1000);
+   }
+   if((buttonState1==HIGH)&&(buttonState2==HIGH)&&(buttonState3==LOW)&&(buttonState4==HIGH))
+   {
+   lcd.clear(); lcd.setCursor(4, 1);lcd.print("load-2 on "); 
+   digitalWrite(M2,HIGH);delay(1000); 
+   }
+   if((buttonState1==HIGH)&&(buttonState2==HIGH)&&(buttonState3==HIGH)&&(buttonState4==LOW))
+   {
+    lcd.clear();lcd.setCursor(4, 1);lcd.print("load-2 off"); 
+   digitalWrite(M2,LOW);delay(1000);
+   }
+   if((buttonState1==LOW)&&(buttonState2==LOW)&&(buttonState3==LOW)&&(buttonState4==LOW))
+   {
+    lcd.clear(); lcd.setCursor(4, 1);lcd.print("NO ACTION"); 
+   digitalWrite(M1,LOW); digitalWrite(M2,LOW); digitalWrite(M3,LOW); digitalWrite(M4,LOW);
+   }
+   lcd.clear();
+}
+}

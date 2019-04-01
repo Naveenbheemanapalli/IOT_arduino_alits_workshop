@@ -1,0 +1,101 @@
+
+#include <LiquidCrystal.h>
+//#include <SoftwareSerial.h>
+
+//SoftwareSerial mySerial(8, 9); // RX, TX
+
+int data=0,count=0;
+String a;
+char ch ,data1[61],rcv;
+ LiquidCrystal lcd(A0, A1, A2, A3, A4, A5);
+ const int ir1 = 9;
+  const int ir2 = 10;
+ const int buzzer = 8;  
+void okcheck();
+void setup()
+{
+ 
+  lcd.begin(16, 2);
+  Serial.begin(9600);
+    pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(buzzer, OUTPUT);
+  pinMode(ir1, INPUT);
+  pinMode(ir2, INPUT);
+  digitalWrite(buzzer,HIGH);
+  lcd.clear();lcd.print("Theft Identifi");delay(500);lcd.setCursor(0, 1);lcd.print("Using I0T");delay(1000);
+}
+void beep()
+{
+ digitalWrite(buzzer,LOW);delay(400);digitalWrite(buzzer,HIGH);delay(500); 
+  digitalWrite(buzzer,LOW);delay(400);digitalWrite(buzzer,HIGH);delay(500);
+}
+void loop()
+{
+lcd.clear();lcd.print("AT");Serial.print("AT\r\n");delay(1000);
+lcd.clear();lcd.print("ATE0");Serial.print("ATE0\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CMGF=1");Serial.print("AT+CMGF=1\r\n");delay(1000);
+lcd.clear();lcd.print("AT+CNMI=1,2,0,0");Serial.print("AT+CNMI=1,2,0,0\r\n");delay(1000);
+lcd.clear();lcd.print("AT+SAPBR=3,1 CONTYPE");delay(500);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("Contype");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("GPRS");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("AT+SAPBR=3,1 APN");delay(500);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("APN");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("WWW");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("AT+SAPBR=1,1 INIT");delay(500);Serial.print("AT+SAPBR=1,1\r\n");delay(10000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);
+lcd.clear();lcd.print("IP ADDRESS");delay(500);Serial.print("AT+SAPBR=2,1\r\n");delay(1000);
+lcd.clear();lcd.print("HTTPINIT");delay(500);Serial.print("AT+HTTPINIT\r\n");delay(1000);
+lcd.clear();lcd.print("AT+HTTPPARA");delay(500);Serial.print("AT+HTTPPARA=");Serial.print('"');Serial.print("URL");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("http://api.thingspeak.com/update?key=91SHW5GUCCRO6Y5M&field1=Thefr identification using System");Serial.print('"');Serial.print("\r\n");delay(3000);
+lcd.clear();lcd.print("AT+HTTPACTION");delay(500);Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);
+lcd.clear();lcd.print("AT+HTTPOACTION");delay(500);Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);
+while(1)
+{
+int irval=digitalRead(ir1);
+if(irval==LOW)
+{
+lcd.clear();lcd.print("ALERT AT PLACE-1");delay(1000);
+beep();
+lcd.clear();lcd.print("AT+SAPBR=3,1 CONTYPE");delay(500);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("Contype");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("GPRS");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("AT+SAPBR=3,1 APN");delay(500);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("APN");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("WWW");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("AT+SAPBR=1,1 INIT");delay(500);Serial.print("AT+SAPBR=1,1\r\n");delay(10000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);
+lcd.clear();lcd.print("IP ADDRESS");delay(500);Serial.print("AT+SAPBR=2,1\r\n");delay(1000);
+lcd.clear();lcd.print("HTTPINIT");delay(500);Serial.print("AT+HTTPINIT\r\n");delay(1000);
+lcd.clear();lcd.print("AT+HTTPPARA");delay(500);Serial.print("AT+HTTPPARA=");Serial.print('"');Serial.print("URL");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("http://api.thingspeak.com/update?key=91SHW5GUCCRO6Y5M&field1=Alert at place-1");Serial.print('"');Serial.print("\r\n");delay(3000);
+lcd.clear();lcd.print("AT+HTTPACTION");delay(500);Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);
+lcd.clear();lcd.print("AT+HTTPACTION");delay(500);Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);    
+}
+else
+{
+lcd.clear();lcd.print("PLACE:1 SAFE"); delay(1000);
+}
+
+irval=digitalRead(ir2);
+if(irval==LOW)
+{
+lcd.clear();lcd.print("ALERT AT PLACE-2");delay(1000);
+beep();
+lcd.clear();lcd.print("AT+SAPBR=3,1 CONTYPE");delay(500);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("Contype");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("GPRS");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("AT+SAPBR=3,1 APN");delay(500);Serial.print("AT+SAPBR=3,1,");Serial.print('"');Serial.print("APN");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("WWW");Serial.print('"');Serial.print("\r\n");delay(1000);
+lcd.clear();lcd.print("AT+SAPBR=1,1 INIT");delay(500);Serial.print("AT+SAPBR=1,1\r\n");delay(10000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);Serial.print("AT+SAPBR=1,1\r\n");delay(1000);
+lcd.clear();lcd.print("IP ADDRESS");delay(500);Serial.print("AT+SAPBR=2,1\r\n");delay(1000);
+lcd.clear();lcd.print("HTTPINIT");delay(500);Serial.print("AT+HTTPINIT\r\n");delay(1000);
+lcd.clear();lcd.print("AT+HTTPPARA");delay(500);Serial.print("AT+HTTPPARA=");Serial.print('"');Serial.print("URL");Serial.print('"');Serial.print(',');Serial.print('"');Serial.print("http://api.thingspeak.com/update?key=91SHW5GUCCRO6Y5M&field1=Alert at place-2 ");Serial.print('"');Serial.print("\r\n");delay(3000);
+lcd.clear();lcd.print("AT+HTTPACTION");delay(500);Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);
+lcd.clear();lcd.print("AT+HTTPACTION");delay(500);Serial.print("AT+HTTPACTION=0\r\n"); delay(1000);    
+}
+else
+{
+lcd.clear();lcd.print("PLACE-2 SAFE"); delay(1000);
+}
+}
+}
+
+void okcheck()
+{
+  if(Serial.available()>0)
+
+  {
+    digitalWrite(LED_BUILTIN, HIGH);
+  
+  do
+  {
+    ch=Serial.read();
+    }while(ch!='K');
+  digitalWrite(LED_BUILTIN, LOW);
+}  
+}

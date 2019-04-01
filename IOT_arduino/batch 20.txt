@@ -1,0 +1,253 @@
+#include <lpc214x.h>		 //21007BB4B15F         18008D991A16
+#include <stdio.h>
+#include <string.h>
+
+#include "lcd.h"
+#include "serial.h"
+//#include "gsm.h"
+#include "gpio.h"
+
+#define ON  '1'//0x31
+#define OFF '0' //0x30
+
+
+
+#define  heart  P0_3 
+#define  ir  P0_4
+
+#define  buzzer  P0_16
+
+unsigned int memsx=0,memsy=0;
+void serial0_RxISR(void) __irq; 
+
+unsigned long int as1()
+{
+ AD0CR&=0XFFFFFF00;
+ AD0CR|=0X01000002;
+ delay(500);
+  while(!(AD0DR1&0X80000000));
+ return ((AD0DR1 >> 6) & 0x03FF);
+}
+unsigned long int as2()
+{
+ AD0CR&=0XFFFFFF00;
+ AD0CR|=0X01000004;
+ //delay(500);
+ while(!(AD0DR2&0X80000000));
+ return((AD0DR2 >> 6) & 0x03FF);
+}
+unsigned long int as3()
+{
+ AD0CR&=0XFFFFFF00;
+ AD0CR|=0X01000008;
+ //delay(500);
+ while(!(AD0DR3&0X80000000));
+ return((AD0DR3 >> 6) & 0x03FF);
+}
+
+
+void pin()
+{
+ PINSEL0=0X00050005;//SELECTING PIN OPERATION
+ PINSEL1=0X15000000;
+ PINSEL2=0X00000000;
+ IODIR0=0xffffffff;
+//IODIR0=0X00000000|sensor1|sensor2;// as output	and 2 pins as input
+ IODIR0 &= ~(heart|ir);
+ IODIR1=0XFFFFFFFF;//PORT1 AS OUTPUT
+ IOCLR1=0XFFFFFFFF;
+ AD0CR=0X00210600;// ADC CONTROL REGISTER
+//IOPIN0|=0X0000001C;
+ //IOSET0=sensor1|sensor2;
+}
+/*char inp0(char _bit)
+{
+ unsigned long c; 
+ c = 1<<_bit; // Calculate digit to configuration for input port
+ IODIR0 &= ~c; // Set input port from parameter _bit
+ return((IOPIN0 & c)>>_bit); // Read and return data bit
+}*/
+
+int inp0(int pinNumber)
+{
+  // Read the current state of all pins in GPIO block 0
+  int pinBlockState = IOPIN0;
+
+  // Read the value of 'pinNumber'
+  int pinState = (pinBlockState & (/*1 <<*/ pinNumber)) ? 1 : 0;
+
+  // Return the value of pinState
+  return pinState;
+}
+void InitSerial0Int(unsigned isrPtr)
+{
+  U0IER = 0x01;
+  VICVectCntl0 	= 0x00000026;  						//select a priority slot for a given interrupt  
+  VICVectAddr0 	= (unsigned long)isrPtr;		//pass the address of the IRQ into the VIC slot 
+  VICIntEnable 	|= 0x00000040;						//enable interrupt2
+}
+
+
+
+unsigned char chkok()
+{
+  unsigned char rt;
+ 
+ do{
+    rt = receive_0();
+	if(rt == 'E')
+	  {
+	   	 rt='E';
+		 break;
+	  }
+   }while(rt != 'K');
+
+   return rt;
+}
+
+  
+void okcheck()
+{
+ unsigned char rr;
+ do{
+     rr = receive_0();
+   }while(rr != 'K');
+}
+
+
+
+unsigned char mob1[11];//="9030059841\0";
+unsigned char mob2[10]="9014475682";
+unsigned int card=0,set1=0,set2=0,set3=0,hb=0,cnt=0,ht=0,loop=0;
+
+
+void main()		   //gsm modem is connected to serial0 and system is connected to serial1
+{
+ unsigned char rec='X',rec1='x',p;
+ unsigned long int cnt=0,hc=0,ht=0;
+ unsigned int temp=0,hb;
+ 
+ pin();
+  IO0SET=ir;
+  IO0CLR=buzzer;delay(1000);
+	ser_init_0(0x61,0x00);
+	ser_init_1(0x61,0x00); //serial initilization 
+
+	initlcd();
+
+	stringlcd(0x80,"HEALTH CARE SYSTEM"); //initial message
+	stringlcd(0xc0,"USING IoT"); 
+	string_0("AT\r\n");		
+	okcheck();
+
+	
+	string_0("ATE0\r\n");		
+	okcheck();
+
+
+	string_0("AT+CMGF=1\r\n");	//delay(2000);delay(2000);
+	okcheck();
+    
+	string_0("AT+CNMI=1,2,0,0\r\n");//delay(2000);delay(2000);
+	okcheck(); 	  
+
+	//string_0("AT+CSMP=17,167,0,0\r\n");//delay(2000);delay(2000);
+	//okcheck(); 	  
+
+	
+	 clcd(1);
+stringlcd(0x01,"AT+SAPBR=3,1,CONTYPE GPRS");string_0("AT+SAPBR=3,1,");send_0('"');string_0("Contype");send_0('"');send_0(',');send_0('"');string_0("GPRS");send_0('"');string_0("\r\n");delay(3000);
+ stringlcd(0x01,"AT+SAPBR=3,1, APN WWW");string_0("AT+SAPBR=3,1,");send_0('"');string_0("APN");send_0('"');send_0(',');send_0('"');string_0("WWW");send_0('"');string_0("\r\n");delay(2000);
+ stringlcd(0x01,"AT+SAPBR=1,1");string_0("AT+SAPBR=1,1\r\n");delay(5000);
+ stringlcd(0x01,"AT+SAPBR=2,1");string_0("AT+SAPBR=2,1\r\n");delay(5000);
+ stringlcd(0x01,"AT+HTTPINIT");string_0("AT+HTTPINIT\r\n");delay(5000);
+ stringlcd(0x01,"AT+HTTPPARA");string_0("AT+HTTPPARA=");send_0('"');string_0("URL");send_0('"');send_0(',');send_0('"');string_0("http://api.thingspeak.com/update?key=91SHW5GUCCRO6Y5M&field1=");conv_serial_0(temp);delay(200);string_0("&field2=");conv_serial_0(hb);delay(200);send_0('"');string_0("\r\n");delay(3000);
+ stringlcd(0x01,"AT+HTTACTION=0");string_0("AT+HTTPACTION=0\r\n");delay(5000);
+ stringlcd(0x01,"DONE UPLOAD SUCCESSFULLT");delay(1000); 
+	
+
+ while(1)
+ {
+ 	
+	
+	 stringlcd(0x80,"Temp:");//0x85,6,7
+	 stringlcd(0xC0,"Hb:");	 //0x8a,b,c
+	  temp = as2();
+	 temp = (temp/3);
+	 temp=230-temp; clcd(0x85);conv(temp);
+	  delay(300);
+	  	
+	
+
+			for(ht=0;ht<10;ht++)
+			   {
+				 while(inp0(heart) == 1)
+				      {
+					   cnt++;
+				      }
+				delay(5);
+			   }
+	  
+		hb=66+cnt%10;
+		hb=hb-2;	
+		//clcd(0xc7);conv(hb);	  
+	  clcd(0x85);conv(temp);
+	  	  
+	  clcd(0xC5);conv(hb); delay(1000);
+
+	 /*  if(inp0(ir) == 0)
+	   {
+	    stringlcd(0xC9,"GAS:0N ");delay(1000);
+		delay(1000);IO0SET=buzzer;delay(1000);IO0CLR=buzzer;delay(1000);
+	stringlcd(0x01,"AT+SAPBR=3,1,CONTYPE GPRS");string_0("AT+SAPBR=3,1,");send_0('"');string_0("Contype");send_0('"');send_0(',');send_0('"');string_0("GPRS");send_0('"');string_0("\r\n");delay(3000);
+ stringlcd(0x01,"AT+SAPBR=3,1, APN WWW");string_0("AT+SAPBR=3,1,");send_0('"');string_0("APN");send_0('"');send_0(',');send_0('"');string_0("WWW");send_0('"');string_0("\r\n");delay(2000);
+ stringlcd(0x01,"AT+SAPBR=1,1");string_0("AT+SAPBR=1,1\r\n");delay(5000);
+ stringlcd(0x01,"AT+SAPBR=2,1");string_0("AT+SAPBR=2,1\r\n");delay(5000);
+ stringlcd(0x01,"AT+HTTPINIT");string_0("AT+HTTPINIT\r\n");delay(5000);
+ stringlcd(0x01,"AT+HTTPPARA");string_0("AT+HTTPPARA=");send_0('"');string_0("URL");send_0('"');send_0(',');send_0('"');string_0("http://api.thingspeak.com/update?key=91SHW5GUCCRO6Y5M&field1=Gas detected  TEMP ");conv_serial_0(temp);delay(200);string_0("&field2=HEART RATE");conv_serial_0(hb);delay(200);send_0('"');string_0("\r\n");delay(3000);
+ stringlcd(0x01,"AT+HTTACTION=0");string_0("AT+HTTPACTION=0\r\n");delay(5000);
+ stringlcd(0x01,"DONE UPLOAD SUCCESSFULLT");delay(1000); 
+
+	   }
+	   else
+	   {
+	   stringlcd(0xC9,"GAS:0FF");delay(1000);
+	   }
+	   */
+  	 if(temp > 40)
+	   {
+
+delay(1000);IO0SET=buzzer;delay(1000);IO0CLR=buzzer;delay(1000);
+
+ stringlcd(0x01,"AT+SAPBR=3,1,CONTYPE GPRS");string_0("AT+SAPBR=3,1,");send_0('"');string_0("Contype");send_0('"');send_0(',');send_0('"');string_0("GPRS");send_0('"');string_0("\r\n");delay(3000);
+ stringlcd(0x01,"AT+SAPBR=3,1, APN WWW");string_0("AT+SAPBR=3,1,");send_0('"');string_0("APN");send_0('"');send_0(',');send_0('"');string_0("WWW");send_0('"');string_0("\r\n");delay(2000);
+ stringlcd(0x01,"AT+SAPBR=1,1");string_0("AT+SAPBR=1,1\r\n");delay(5000);
+ stringlcd(0x01,"AT+SAPBR=2,1");string_0("AT+SAPBR=2,1\r\n");delay(5000);
+ stringlcd(0x01,"AT+HTTPINIT");string_0("AT+HTTPINIT\r\n");delay(5000);
+ stringlcd(0x01,"AT+HTTPPARA");string_0("AT+HTTPPARA=");send_0('"');string_0("URL");send_0('"');send_0(',');send_0('"');string_0("http://api.thingspeak.com/update?key=91SHW5GUCCRO6Y5M&field1=TEMP");conv_serial_0(temp);delay(200);string_0("&field2=HEART RATE");conv_serial_0(hb);delay(200);send_0('"');string_0("\r\n");delay(3000);
+ stringlcd(0x01,"AT+HTTACTION=0");string_0("AT+HTTPACTION=0\r\n");delay(5000);
+ stringlcd(0x01,"DONE UPLOAD SUCCESSFULLT");delay(1000); 
+		
+	   }
+
+	 if(hb > 74)
+	  {
+	  delay(1000);IO0SET=buzzer;delay(1000);IO0CLR=buzzer;delay(1000);
+	stringlcd(0x01,"AT+SAPBR=3,1,CONTYPE GPRS");string_0("AT+SAPBR=3,1,");send_0('"');string_0("Contype");send_0('"');send_0(',');send_0('"');string_0("GPRS");send_0('"');string_0("\r\n");delay(3000);
+ stringlcd(0x01,"AT+SAPBR=3,1, APN WWW");string_0("AT+SAPBR=3,1,");send_0('"');string_0("APN");send_0('"');send_0(',');send_0('"');string_0("WWW");send_0('"');string_0("\r\n");delay(2000);
+ stringlcd(0x01,"AT+SAPBR=1,1");string_0("AT+SAPBR=1,1\r\n");delay(5000);
+ stringlcd(0x01,"AT+SAPBR=2,1");string_0("AT+SAPBR=2,1\r\n");delay(5000);
+ stringlcd(0x01,"AT+HTTPINIT");string_0("AT+HTTPINIT\r\n");delay(5000);
+ stringlcd(0x01,"AT+HTTPPARA");string_0("AT+HTTPPARA=");send_0('"');string_0("URL");send_0('"');send_0(',');send_0('"');string_0("http://api.thingspeak.com/update?key=91SHW5GUCCRO6Y5M&field1=TEMP");conv_serial_0(temp);delay(200);string_0("&field2=HEART RATE");conv_serial_0(hb);delay(200);send_0('"');string_0("\r\n");delay(3000);
+ stringlcd(0x01,"AT+HTTACTION=0");string_0("AT+HTTPACTION=0\r\n");delay(5000);
+ stringlcd(0x01,"DONE UPLOAD SUCCESSFULLT");delay(1000); 
+
+
+	  }   
+	  
+	
+
+ }
+ }
+ 
+																                  
